@@ -5,7 +5,7 @@ from functools import wraps
 
 import requests
 
-from fakturoid.models import Account, Subject, Invoice, Generator, Message, Expense
+from fakturoid.models import Account, Subject, Invoice, InventoryItem, Generator, Message, Expense
 from fakturoid.paging import ModelList
 
 __all__ = ['Fakturoid']
@@ -31,6 +31,7 @@ class Fakturoid(object):
             Account: AccountApi(self),
             Subject: SubjectsApi(self),
             Invoice: InvoicesApi(self),
+            InventoryItem: InventoryApi(self),
             Expense: ExpensesApi(self),
             Generator: GeneratorsApi(self),
             Message: MessagesApi(self),
@@ -109,6 +110,10 @@ class Fakturoid(object):
     @model_api(Generator)
     def generators(self, mapi, *args, **kwargs):
         return mapi.find(*args, **kwargs)
+
+    @model_api(Invoice)
+    def inventory_items(self, mapi, id):
+        return mapi.load(id)
 
     @model_api()
     def save(self, mapi, obj, **kwargs):
@@ -407,6 +412,16 @@ class GeneratorsApi(CrudModelApi):
 
         return super(GeneratorsApi, self).find(params, endpoint)
 
+class InventoryApi(CrudModelApi):
+    model_type = InventoryItem
+    endpoint = 'inventory-items'
+
+    def find(self, name=None, article_number=None, sku=None):
+        params = {}
+        if name:
+            params['name'] = name
+
+        return InventoryItem.find(params)
 
 class MessagesApi(ModelApi):
     model_type = Message
